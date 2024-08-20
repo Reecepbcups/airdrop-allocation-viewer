@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/btcsuite/btcutil/bech32"
@@ -12,11 +13,6 @@ import (
 
 	"github.com/gorilla/mux"
 )
-
-// var balances = map[string]uint64{
-// 	"alice": 100,
-// 	"bob":   200,
-// }
 
 //go:embed network/dungeon-1/genesis.json
 var genesis []byte
@@ -41,7 +37,6 @@ func init() {
 		panic(err)
 	}
 
-	// get the balances
 	bals := g["app_state"].(map[string]interface{})["bank"].(map[string]interface{})["balances"].([]interface{})
 	for _, b := range bals {
 		bal := b.(map[string]interface{})
@@ -56,9 +51,6 @@ func init() {
 		}
 		balances[address] = c
 	}
-
-	// fmt.Println(balances)
-	// panic(1929)
 }
 
 func main() {
@@ -66,9 +58,21 @@ func main() {
 
 	gRouter.HandleFunc("/{address}", GetBalance)
 
-	port := ":4001"
-	fmt.Println("Listening on " + port)
-	http.ListenAndServe(port, gRouter)
+	port := 4001
+	if len(os.Args) > 1 {
+		port, _ = strconv.Atoi(os.Args[1])
+	}
+
+	host := ":"
+	if len(os.Args) > 2 {
+		host = os.Args[2]
+		if host[len(host)-1] != ':' {
+			host += ":"
+		}
+	}
+
+	fmt.Println("Listening on " + host + strconv.Itoa(port))
+	http.ListenAndServe(fmt.Sprintf("%s%d", host, port), gRouter)
 }
 
 func GetBalance(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +87,7 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// require hrp is cosmos, dungeon, osmosis, or juno
-	if hrp != "cosmos" && hrp != "dungeon" && hrp != "osmosis" && hrp != "juno" {
+	if hrp != "cosmos" && hrp != "dungeon" && hrp != "osmosis" && hrp != "juno" && hrp != "noble" {
 		http.Error(w, "invalid address", http.StatusBadRequest)
 		return
 	}
@@ -96,7 +100,6 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// given an address, return the balance
-	// address := r.URL.Query().Get("address")
 	balance, ok := balances[address]
 	if !ok {
 		http.Error(w, "address not found", http.StatusNotFound)
