@@ -56,6 +56,8 @@ func init() {
 func main() {
 	gRouter := mux.NewRouter()
 
+	gRouter.HandleFunc("/", Home)
+
 	gRouter.HandleFunc("/{address}", GetBalance)
 
 	port := 4001
@@ -75,9 +77,51 @@ func main() {
 	http.ListenAndServe(fmt.Sprintf("%s%d", host, port), gRouter)
 }
 
+func Home(w http.ResponseWriter, r *http.Request) {
+	html := `
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<title>Dungeon Airdrop Check</title>
+	</head>
+	<body>
+		<h1>Dungeon Airdrop Check</h1>
+
+		<form action="/"" method="get" id="form">
+			<input type="text" id="address" name="address" placeholder="Enter your cosmos address">
+			<input type="submit" value="Check">
+		</form>
+
+		<script>
+			document.getElementById("form").addEventListener("submit", function(e) {
+				e.preventDefault();
+				const address = document.getElementById("address").value;
+				window.location.href = "https://dungeon-airdrop-check.reece.sh/" + address;
+			});
+		</script>
+
+		<hr />
+
+		<p>Use <a href="https://dungeon-airdrop-check.reece.sh/YOUR_ADDRESS_HERE">https://dungeon-airdrop-check.reece.sh/{address}</a> to check your DGN airdrop allocation.</p>
+		<p>( You can use your CosmosHub, Osmosis, Juno, or Noble address from any wallet )</p>
+
+		<p>Source & airdrop logic: <a href="https://github.com/CryptoDungeon/dungeonchain/tree/main/airdrop">https://github.com/CryptoDungeon/dungeonchain</a></p>
+	</body>
+	</html>
+	`
+	w.Write([]byte(html))
+}
+
 func GetBalance(w http.ResponseWriter, r *http.Request) {
 
-	address := mux.Vars(r)["address"]
+	vars := mux.Vars(r)
+
+	// see if address is in vars, if not, return error
+	address, ok := vars["address"]
+	if !ok {
+		http.Error(w, "address not found. make request with https://dungeon-airdrop-check.reece.sh/{address}", http.StatusBadRequest)
+		return
+	}
 
 	// bech32 convert to dungeon
 	hrp, data, err := bech32.Decode(address)
@@ -123,5 +167,20 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	outputStr := fmt.Sprintf("%s %s", humanize.Comma(int64(amtInt/1_000_000)), "DGN")
-	w.Write([]byte(outputStr))
+	// w.Write([]byte(outputStr))
+
+	html := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<title>Dungeon Airdrop Check</title>
+	</head>
+	<body>
+		<h1>Dungeon Airdrop Check</h1>
+		<p>Address: %s</p>
+		<p>Allocation: %s</p>
+	</body>
+	</html>
+	`, address, outputStr)
+	w.Write([]byte(html))
 }
