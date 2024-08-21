@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # docker build . -t airdrop-viewer-api:local
-# docker run -p 4001:4001 airdrop-viewer-api:local 4001
+# docker run -d -p 4001:4001 airdrop-viewer-api:local 4001
 
 
 FROM golang:1.23 AS build

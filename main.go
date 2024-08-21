@@ -113,7 +113,6 @@ func Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetBalance(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 
 	// see if address is in vars, if not, return error
@@ -131,7 +130,7 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// require hrp is cosmos, dungeon, osmosis, or juno
-	if hrp != "cosmos" && hrp != "dungeon" && hrp != "osmosis" && hrp != "juno" && hrp != "noble" {
+	if hrp != "cosmos" && hrp != "dungeon" && hrp != "osmo" && hrp != "juno" && hrp != "noble" {
 		http.Error(w, "invalid address", http.StatusBadRequest)
 		return
 	}
@@ -139,19 +138,23 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	// convert to bech32
 	address, err = bech32.Encode("dungeon", data)
 	if err != nil {
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		http.Error(w, "internal error converting to dungeon address", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println(address)
 
 	// given an address, return the balance
 	balance, ok := balances[address]
 	if !ok {
-		http.Error(w, "address not found", http.StatusNotFound)
+		// http.Error(w, "address not found", http.StatusNotFound)
+		w.Write([]byte(noAllocation(address)))
 		return
 	}
 
 	if len(balance) == 0 {
-		http.Error(w, "no balance allocation", http.StatusNotFound)
+		// http.Error(w, "no balance allocation", http.StatusNotFound)
+		w.Write([]byte(noAllocation(address)))
 		return
 	}
 
@@ -167,7 +170,6 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	outputStr := fmt.Sprintf("%s %s", humanize.Comma(int64(amtInt/1_000_000)), "DGN")
-	// w.Write([]byte(outputStr))
 
 	html := fmt.Sprintf(`
 	<!DOCTYPE html>
@@ -183,4 +185,38 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	</html>
 	`, address, outputStr)
 	w.Write([]byte(html))
+}
+
+func noAllocation(address string) string {
+	return fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<title>Dungeon Airdrop Check</title>
+	</head>
+	<body>
+		<h1>Dungeon Airdrop Check</h1>
+		<p>Address: %s</p>
+		<p>Allocation: No allocation</p>
+		<p>Your account is not eligible for the airdrop.</p>
+
+		<br />
+
+		<h2>FAQ:</h2>
+		<ul>
+			<li>Q: Why is my account not eligible?</li>
+			<li>A: You had less 50 ATOM delegated (or redelegating) to any number of active validators on the hub.</li>
+		</ul>
+		<ul>
+			<li>Q: I had 50 ATOM staked?</li>
+			<li>A: At CosmosHub block 21383635 (Jul 21st 2024, 07:00:25+00:00 UTC)? Not according to the snapshot export</li>
+		</ul>
+		<ul>
+			<li>Q: I did not have any ATOM staked but had other NFTs and multipliers?</li>
+			<li>A: 50 ATOM was the minimum requirements, multipliers boosted this number. (0 ATOM allocation times a multipler = 0)</li>
+		</ul>
+	</body>
+	</html>
+	`, address)
+
 }
