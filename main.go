@@ -106,6 +106,19 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		<p>( You can use your CosmosHub, Osmosis, Juno, or Noble address from any wallet )</p>
 
 		<p>Source & airdrop logic: <a href="https://github.com/CryptoDungeon/dungeonchain/tree/main/airdrop">https://github.com/CryptoDungeon/dungeonchain</a></p>
+
+		<h2>Requirements:</h2>
+		<ul>
+			<li>Minimum: 50 ATOM total staked (e.g. 10 to 5 validators, 50 to 1 validator, or any combination)</li>
+			<li>Snapshot: CosmosHub block 21383635 (Jul 21st 2024, 07:00:25+00:00 UTC)</li>
+		</ul>
+
+		<h2>Stake Tiers</h2>
+		<ul>
+			<li>50 - 199 ATOM</li>
+			<li>200 - 999 ATOM</li>
+			<li>1000+ ATOM</li>
+		</ul>
 	</body>
 	</html>
 	`
