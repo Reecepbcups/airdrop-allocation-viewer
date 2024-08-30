@@ -105,7 +105,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		<p>Use <a href="https://dungeon-airdrop-check.reece.sh/YOUR_ADDRESS_HERE">https://dungeon-airdrop-check.reece.sh/{address}</a> to check your DGN airdrop allocation.</p>
 		<p>( You can use your CosmosHub, Osmosis, Juno, or Noble address from any wallet )</p>
 
-		<p>Source & airdrop logic: <a href="https://github.com/CryptoDungeon/dungeonchain/tree/main/airdrop">https://github.com/CryptoDungeon/dungeonchain</a></p>
+		<p>Source & airdrop logic: <a href="https://github.com/Crypto-Dungeon/dungeonchain/tree/main/airdrop">https://github.com/CryptoDungeon/dungeonchain</a></p>
 
 		<h2>Requirements:</h2>
 		<ul>
